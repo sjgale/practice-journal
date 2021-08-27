@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Session } from './Session';
+import { Session } from './session.interface';
 import { randomUUID } from 'crypto';
 
 @Injectable()
