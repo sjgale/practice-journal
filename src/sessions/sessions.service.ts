@@ -1,48 +1,40 @@
-import { Injectable } from '@nestjs/common';
-import { Session } from './session.interface';
 import { randomUUID } from 'crypto';
+import { Repository } from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Session } from './session.entity';
 
 @Injectable()
 export class SessionsService {
-  private sessions: Session[] = [
-    {
-      id: '999ae687-9c6f-40f3-8380-0cd369341d01',
-      summary: 'I practiced the A, C, and D chords.',
-      length: 15,
-    },
-    {
-      id: '58d7f1b3-2e48-4ed1-9610-4f7ab715892a',
-      summary:
-        'I practiced major and minor pentatonic scales over a simple chord progression.',
-      length: 20,
-    },
-  ];
+  constructor(
+    @InjectRepository(Session)
+    private sessionRepository: Repository<Session>,
+  ) {}
 
-  findAll(): Session[] {
-    return this.sessions;
+  findAll(): Promise<Session[]> {
+    return this.sessionRepository.find();
   }
 
-  findOne(id?: string): Session {
-    return this.sessions.find((session) => session.id === id);
+  findOne(id?: string): Promise<Session> {
+    return this.sessionRepository.findOne(id);
   }
 
-  delete(id: string): void {
-    this.sessions = this.sessions.filter((session) => session.id !== id);
+  async delete(id: string): Promise<void | Error> {
+    const result = await this.sessionRepository.delete(id);
+    if (result.affected !== 1) {
+      return new Error(`Failed to delete session: ${id}`);
+    }
   }
 
-  add(sessionStub: Partial<Session>): string {
-    const id = randomUUID();
-    const baseSession = {
-      id,
+  add(sessionStub: Partial<Session>): Promise<Session> {
+    const newSession = {
+      id: randomUUID(),
       summary: '',
       length: 0,
+      date: new Date(),
+      ...sessionStub,
     };
 
-    this.sessions.push({
-      ...baseSession,
-      ...sessionStub,
-    });
-
-    return id;
+    return this.sessionRepository.save(newSession);
   }
 }

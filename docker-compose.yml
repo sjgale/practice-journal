@@ -1,0 +1,11 @@
+services:
+  postgres:
+    image: postgres:13.4-alpine
+    volumes:
+      - ./dev/postgres-setup/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: practice
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: practice_journal
